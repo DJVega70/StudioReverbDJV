@@ -1,20 +1,30 @@
-
-name: Build VCA Bus Compressor (Windows)
+name: Build VST3 (Windows)
 on:
   push:
-    paths:
-      - 'VCABusComp/**'
   workflow_dispatch:
 jobs:
   build:
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
-      - name: Configure
+
+      - name: Configure reverb
+        run: cmake -B build -G "Visual Studio 17 2022" -A x64
+      - name: Build reverb
+        run: cmake --build build --config Release --target StudioReverb_VST3
+      - name: Package reverb
+        shell: pwsh
+        run: Compress-Archive -Path "build/StudioReverb_artefacts/Release/VST3/Studio Reverb.vst3" -DestinationPath StudioReverb-VST3-win64.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: StudioReverb-VST3-win64
+          path: StudioReverb-VST3-win64.zip
+
+      - name: Configure compressor
         run: cmake -S VCABusComp -B build-comp -G "Visual Studio 17 2022" -A x64
-      - name: Build
+      - name: Build compressor
         run: cmake --build build-comp --config Release --target VCABusComp_VST3
-      - name: Package
+      - name: Package compressor
         shell: pwsh
         run: Compress-Archive -Path "build-comp/VCABusComp_artefacts/Release/VST3/VCA Bus Compressor.vst3" -DestinationPath VCABusComp-VST3-win64.zip
       - uses: actions/upload-artifact@v4
