@@ -11,12 +11,17 @@ FetchContent_Declare(JUCE
     GIT_SHALLOW ON)
 FetchContent_MakeAvailable(JUCE)
 
+set(VEGA_FORMATS VST3 Standalone)
+if(APPLE)
+    list(APPEND VEGA_FORMATS AU)
+endif()
+
 juce_add_plugin(StudioReverb
-    COMPANY_NAME "StudioReverb"
+    COMPANY_NAME "Vega Productions"
     PLUGIN_MANUFACTURER_CODE Srvb
     PLUGIN_CODE Srv1
-    FORMATS VST3 Standalone
-    PRODUCT_NAME "Studio Reverb"
+    FORMATS ${VEGA_FORMATS}
+    PRODUCT_NAME "Vega Productions Reverb"
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
     NEEDS_MIDI_OUTPUT FALSE

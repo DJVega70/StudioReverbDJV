@@ -225,6 +225,19 @@ void StudioReverbAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, 
         for (int i = 0; i < size2; ++i, ++idx) spectrumData[(size_t) (start2 + i)] = 0.5f * (ol[idx] + or_[idx]);
         spectrumFifo.finishedWrite(size1 + size2);
     }
+
+    // Output peak meters for the editor
+    {
+        float pl = 0.0f, pr = 0.0f;
+        for (int i = 0; i < n; ++i) { pl = std::max(pl, std::abs(ol[i])); pr = std::max(pr, std::abs(or_[i])); }
+        auto atomicMax = [] (std::atomic<float>& a, float v)
+        {
+            float prev = a.load();
+            while (prev < v && ! a.compare_exchange_weak(prev, v)) {}
+        };
+        atomicMax(outPeakL, pl);
+        atomicMax(outPeakR, pr);
+    }
 }
 
 int StudioReverbAudioProcessor::pullSpectrumSamples(float* dest, int maxNum)

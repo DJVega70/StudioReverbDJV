@@ -16,7 +16,7 @@ public:
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override { return true; }
 
-    const juce::String getName() const override { return "VCA Bus Compressor"; }
+    const juce::String getName() const override { return JucePlugin_Name; }
     bool acceptsMidi() const override { return false; }
     bool producesMidi() const override { return false; }
     double getTailLengthSeconds() const override { return 0.0; }
@@ -34,6 +34,7 @@ public:
     juce::AudioProcessorValueTreeState apvts;
 
     std::atomic<float> grMeterDb { 0.0f };   // positive dB of gain reduction, for the editor
+    std::atomic<float> outPeakL { 0.0f }, outPeakR { 0.0f };   // output peaks since last read
 
     static const juce::StringArray& ratioLabels();
     static const juce::StringArray& attackLabels();

@@ -86,6 +86,15 @@ void VcaBusCompAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
     comp.setParams(p);
     comp.process(buffer.getWritePointer(0), buffer.getWritePointer(1), buffer.getNumSamples());
     grMeterDb = comp.getBlockMaxGainReductionDb();
+
+    // output peaks for the editor's LED meters
+    const float pl = buffer.getMagnitude(0, 0, buffer.getNumSamples());
+    const float pr = buffer.getMagnitude(1, 0, buffer.getNumSamples());
+    for (auto [a, v] : { std::pair<std::atomic<float>*, float> { &outPeakL, pl }, { &outPeakR, pr } })
+    {
+        float prev = a->load();
+        while (prev < v && ! a->compare_exchange_weak(prev, v)) {}
+    }
 }
 
 juce::AudioProcessorEditor* VcaBusCompAudioProcessor::createEditor()

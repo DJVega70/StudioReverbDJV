@@ -11,12 +11,17 @@ FetchContent_Declare(JUCE
     GIT_SHALLOW ON)
 FetchContent_MakeAvailable(JUCE)
 
+set(VEGA_FORMATS VST3 Standalone)
+if(APPLE)
+    list(APPEND VEGA_FORMATS AU)
+endif()
+
 juce_add_plugin(VCABusComp
-    COMPANY_NAME "StudioTools"
+    COMPANY_NAME "Vega Productions"
     PLUGIN_MANUFACTURER_CODE Stlz
     PLUGIN_CODE Vbc1
-    FORMATS VST3 Standalone
-    PRODUCT_NAME "VCA Bus Compressor"
+    FORMATS ${VEGA_FORMATS}
+    PRODUCT_NAME "Vega Productions Bus Compressor"
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
     NEEDS_MIDI_OUTPUT FALSE

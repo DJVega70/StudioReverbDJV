@@ -1,20 +1,68 @@
-name: Build VST3 (Windows)
+name: Build Vega Productions Reverb + Bus Compressor
 on:
   push:
   workflow_dispatch:
 jobs:
-  build:
+  windows:
+    name: Windows VST3
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
-      - name: Configure
+      - name: Configure Vega Productions Reverb
         run: cmake -B build -G "Visual Studio 17 2022" -A x64
-      - name: Build
+      - name: Build Vega Productions Reverb
         run: cmake --build build --config Release --target StudioReverb_VST3
-      - name: Package
+      - name: Package Vega Productions Reverb
         shell: pwsh
-        run: Compress-Archive -Path "build/StudioReverb_artefacts/Release/VST3/Studio Reverb.vst3" -DestinationPath StudioReverb-VST3-win64.zip
+        run: Compress-Archive -Path "build/StudioReverb_artefacts/Release/VST3/Vega Productions Reverb.vst3" -DestinationPath VegaProductions-Reverb-VST3-win64.zip
       - uses: actions/upload-artifact@v4
         with:
-          name: StudioReverb-VST3-win64
-          path: StudioReverb-VST3-win64.zip
+          name: VegaProductions-Reverb-Windows-VST3
+          path: VegaProductions-Reverb-VST3-win64.zip
+      - name: Configure Vega Productions Bus Compressor
+        run: cmake -S VCABusComp -B build-comp -G "Visual Studio 17 2022" -A x64
+      - name: Build Vega Productions Bus Compressor
+        run: cmake --build build-comp --config Release --target VCABusComp_VST3
+      - name: Package Vega Productions Bus Compressor
+        shell: pwsh
+        run: Compress-Archive -Path "build-comp/VCABusComp_artefacts/Release/VST3/Vega Productions Bus Compressor.vst3" -DestinationPath VegaProductions-BusCompressor-VST3-win64.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VegaProductions-BusCompressor-Windows-VST3
+          path: VegaProductions-BusCompressor-VST3-win64.zip
+
+  macos:
+    name: macOS VST3 + AU (Universal)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure Vega Productions Reverb
+        run: cmake -B build -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+      - name: Build Vega Productions Reverb
+        run: cmake --build build --config Release --target StudioReverb_VST3 StudioReverb_AU --parallel
+      - name: Sign and package Vega Productions Reverb
+        run: |
+          codesign --force --deep -s - "build/StudioReverb_artefacts/Release/VST3/Vega Productions Reverb.vst3"
+          codesign --force --deep -s - "build/StudioReverb_artefacts/Release/AU/Vega Productions Reverb.component"
+          mkdir -p dist-StudioReverb
+          cp -R "build/StudioReverb_artefacts/Release/VST3/Vega Productions Reverb.vst3" "build/StudioReverb_artefacts/Release/AU/Vega Productions Reverb.component" dist-StudioReverb/
+          cd dist-StudioReverb && zip -r -y ../VegaProductions-Reverb-macOS.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VegaProductions-Reverb-macOS-VST3-AU
+          path: VegaProductions-Reverb-macOS.zip
+      - name: Configure Vega Productions Bus Compressor
+        run: cmake -S VCABusComp -B build-comp -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+      - name: Build Vega Productions Bus Compressor
+        run: cmake --build build-comp --config Release --target VCABusComp_VST3 VCABusComp_AU --parallel
+      - name: Sign and package Vega Productions Bus Compressor
+        run: |
+          codesign --force --deep -s - "build-comp/VCABusComp_artefacts/Release/VST3/Vega Productions Bus Compressor.vst3"
+          codesign --force --deep -s - "build-comp/VCABusComp_artefacts/Release/AU/Vega Productions Bus Compressor.component"
+          mkdir -p dist-VCABusComp
+          cp -R "build-comp/VCABusComp_artefacts/Release/VST3/Vega Productions Bus Compressor.vst3" "build-comp/VCABusComp_artefacts/Release/AU/Vega Productions Bus Compressor.component" dist-VCABusComp/
+          cd dist-VCABusComp && zip -r -y ../VegaProductions-BusCompressor-macOS.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VegaProductions-BusCompressor-macOS-VST3-AU
+          path: VegaProductions-BusCompressor-macOS.zip

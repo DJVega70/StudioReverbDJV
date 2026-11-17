@@ -17,7 +17,7 @@ public:
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override { return true; }
 
-    const juce::String getName() const override { return "Studio Reverb"; }
+    const juce::String getName() const override { return JucePlugin_Name; }
     bool acceptsMidi() const override { return false; }
     bool producesMidi() const override { return false; }
     double getTailLengthSeconds() const override;
@@ -36,6 +36,9 @@ public:
 
     // Mono output tap for the editor's spectrum display
     int pullSpectrumSamples(float* dest, int maxNum);
+
+    // Output peaks since last read (editor meters)
+    std::atomic<float> outPeakL { 0.0f }, outPeakR { 0.0f };
 
 private:
     void parameterChanged(const juce::String& id, float) override;
